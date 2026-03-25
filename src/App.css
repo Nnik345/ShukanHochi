@@ -6,6 +6,24 @@
   padding: 24px 20px 48px;
 }
 
+.login-gate {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.login-gate-card {
+  width: min(520px, 100%);
+  text-align: center;
+}
+
+.login-gate-text {
+  color: var(--text-muted);
+  margin: 18px 0 16px;
+  font-size: 0.95rem;
+}
+
 .app-header {
   display: flex;
   align-items: center;
@@ -13,6 +31,12 @@
   margin-bottom: 28px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border);
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .logo {
@@ -43,6 +67,28 @@
 .reset-btn:hover {
   border-color: var(--accent);
   color: var(--text);
+}
+
+.auth-btn {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.auth-btn:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+
+.auth-btn.logout {
+  background: transparent;
+  color: var(--accent);
 }
 
 .layout {
@@ -91,6 +137,12 @@
   font-size: 0.85rem;
   font-weight: 700;
   margin-bottom: 10px;
+  color: var(--text-muted);
+}
+
+.backend-note {
+  margin: 0;
+  font-size: 0.72rem;
   color: var(--text-muted);
 }
 
@@ -1061,6 +1113,13 @@
     gap: 16px;
     text-align: center;
   }
+
+  .header-controls {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
 
   .avatar-section {
     flex-direction: column;

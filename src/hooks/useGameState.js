@@ -48,7 +48,7 @@ export default function useGameState() {
   const [totalXp, setTotalXp] = useState(0);
   const [streak, setStreak] = useState(0);
   const [lastCompletionDate, setLastCompletionDate] = useState(null);
-  const [username] = useState('Hero_Player');
+  const [username, setUsername] = useState('Hero_Player');
   const [stats, setStats] = useState({ str: 1, int: 1, dex: 1 });
   const [unallocatedPoints, setUnallocatedPoints] = useState(0);
   const [combatLog, setCombatLog] = useState([]);
@@ -274,11 +274,78 @@ export default function useGameState() {
     setHabits(prev => prev.map(h => ({ ...h, completedToday: false })));
   }, []);
 
+  const hydrateFromBackend = useCallback((payload) => {
+    if (!payload || typeof payload !== 'object') return;
+
+    // Mongo user document from fetch `data` (flat fields)
+    const profile = payload;
+
+    const name = typeof profile.username === 'string' ? profile.username.trim() : '';
+    if (name) setUsername(name);
+
+    if (typeof profile.totalXp === 'number' && profile.totalXp >= 0) {
+      setTotalXp(profile.totalXp);
+    } else if (
+      typeof profile.level === 'number' &&
+      typeof profile.xp === 'number' &&
+      profile.level >= 1
+    ) {
+      // Mongo stores level + XP bar (0–99); game uses totalXp
+      setTotalXp(Math.max(0, (profile.level - 1) * XP_PER_LEVEL + profile.xp));
+    }
+
+    if (typeof profile.streak === 'number' && profile.streak >= 0) {
+      setStreak(profile.streak);
+    }
+    if (typeof profile.unallocatedPoints === 'number' && profile.unallocatedPoints >= 0) {
+      setUnallocatedPoints(profile.unallocatedPoints);
+    }
+
+    if (profile.stats && typeof profile.stats === 'object') {
+      const s = profile.stats;
+      setStats(prev => ({
+        ...prev,
+        str: Number(s.str ?? s.strength ?? prev.str),
+        int: Number(s.int ?? s.intelligence ?? prev.int),
+        dex: Number(s.dex ?? s.dexterity ?? prev.dex),
+      }));
+    }
+
+    if (Array.isArray(profile.habits)) setHabits(profile.habits);
+    else if (Array.isArray(profile.quests)) setHabits(profile.quests);
+
+    if (profile.combat && typeof profile.combat === 'object') {
+      const stage = Math.max(1, Number(profile.combat.stage || 1));
+      const bossMaxHp = getBossMaxHp(stage);
+      const newCombat = {
+        stage,
+        bossHp: Number(profile.combat.bossHp || bossMaxHp),
+        bossMaxHp,
+        bossName: profile.combat.bossName || getBossName(stage),
+        bossEmoji: profile.combat.bossEmoji || getBossEmoji(stage),
+        mana: Number(profile.combat.mana || 20),
+      };
+      combatRef.current = newCombat;
+      setCombat(newCombat);
+    }
+  }, []);
+
+  const getSnapshot = useCallback(() => ({
+    habits,
+    totalXp,
+    streak,
+    lastCompletionDate,
+    stats,
+    unallocatedPoints,
+    combat: combatRef.current,
+  }), [habits, totalXp, streak, lastCompletionDate, stats, unallocatedPoints]);
+
   return {
     habits, xp: xpProgress, totalXp, level, streak, username,
     xpToNext: XP_PER_LEVEL, tier, stats, unallocatedPoints,
     combat, combatLog, bossDefeatedFlash, maxMana, dpsStats,
     unlockedSkills, unlockedGear,
     addHabit, completeHabit, allocateStat, deleteHabit, resetDaily,
+    hydrateFromBackend, getSnapshot,
   };
 }
