@@ -29,7 +29,7 @@ export default function HabitList({ habits, addHabit, completeHabit, deleteHabit
 
   return (
     <div className="card habit-list">
-      <h3 className="section-title">⚔️ Daily Quests</h3>
+      <h3 className="section-title">⚔️ Personal quests</h3>
 
       <form className="habit-form" onSubmit={handleAdd}>
         <input

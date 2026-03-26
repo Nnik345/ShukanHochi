@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import useGameState from './hooks/useGameState';
 import Dashboard from './components/Dashboard';
 import HabitList from './components/HabitList';
@@ -42,6 +42,18 @@ export default function App() {
   const handleLogout = useCallback(() => {
     backend.signOutFromCognito(getSnapshot());
   }, [backend, getSnapshot]);
+
+  const gameRef = useRef(state);
+  gameRef.current = state;
+
+  const handleAvatarSelect = useCallback(
+    (nextId) => {
+      const snap = gameRef.current.getSnapshot();
+      gameRef.current.setAvatarId(nextId);
+      backend.saveToLambda({ ...snap, avatarId: nextId });
+    },
+    [backend]
+  );
 
   if (backend.authState.loading) {
     return (
@@ -101,6 +113,8 @@ export default function App() {
             streak={state.streak}
             tier={state.tier}
             unallocatedPoints={state.unallocatedPoints}
+            avatarId={state.avatarId}
+            onAvatarSelect={handleAvatarSelect}
           />
           <HabitList
             habits={state.habits}
@@ -124,7 +138,10 @@ export default function App() {
             level={state.level}
             unlockedGear={state.unlockedGear}
           />
-          <PartySystem />
+          <PartySystem
+            bearerToken={backend.authState.idToken}
+            myUserId={backend.authState.user?.sub || ''}
+          />
         </div>
       </main>
 

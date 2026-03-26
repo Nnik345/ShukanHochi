@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { DEFAULT_AVATAR_ID, normalizeAvatarId } from '../constants/avatarOptions';
 
 const XP_PER_LEVEL = 100;
 const DIFFICULTY_XP = { Easy: 10, Medium: 25, Hard: 50 };
@@ -49,6 +50,7 @@ export default function useGameState() {
   const [streak, setStreak] = useState(0);
   const [lastCompletionDate, setLastCompletionDate] = useState(null);
   const [username, setUsername] = useState('Hero_Player');
+  const [avatarId, setAvatarId] = useState(DEFAULT_AVATAR_ID);
   const [stats, setStats] = useState({ str: 1, int: 1, dex: 1 });
   const [unallocatedPoints, setUnallocatedPoints] = useState(0);
   const [combatLog, setCombatLog] = useState([]);
@@ -328,6 +330,10 @@ export default function useGameState() {
       combatRef.current = newCombat;
       setCombat(newCombat);
     }
+
+    if (typeof profile.avatarId === 'string' && profile.avatarId.trim()) {
+      setAvatarId(normalizeAvatarId(profile.avatarId));
+    }
   }, []);
 
   const getSnapshot = useCallback(() => ({
@@ -338,14 +344,16 @@ export default function useGameState() {
     stats,
     unallocatedPoints,
     combat: combatRef.current,
-  }), [habits, totalXp, streak, lastCompletionDate, stats, unallocatedPoints]);
+    avatarId,
+  }), [habits, totalXp, streak, lastCompletionDate, stats, unallocatedPoints, avatarId]);
 
   return {
     habits, xp: xpProgress, totalXp, level, streak, username,
+    avatarId,
     xpToNext: XP_PER_LEVEL, tier, stats, unallocatedPoints,
     combat, combatLog, bossDefeatedFlash, maxMana, dpsStats,
     unlockedSkills, unlockedGear,
     addHabit, completeHabit, allocateStat, deleteHabit, resetDaily,
-    hydrateFromBackend, getSnapshot,
+    hydrateFromBackend, getSnapshot, setAvatarId,
   };
 }

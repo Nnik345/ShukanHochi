@@ -1,9 +1,24 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useAuth } from 'react-oidc-context';
 
+function trimBase(url) {
+  return (url || '').replace(/\/$/, '');
+}
+
+const gatewayBase = trimBase(
+  import.meta.env.VITE_API_GATEWAY_URL || import.meta.env.VITE_API_BASE_URL || ''
+);
+const fetchLambda = import.meta.env.VITE_API_LAMBDA_FETCH || '';
+const updateLambda = import.meta.env.VITE_API_LAMBDA_UPDATE || '';
+const hasExplicitGateway = Boolean(import.meta.env.VITE_API_GATEWAY_URL);
+
 const API_FETCH =
-  import.meta.env.VITE_API_FETCH_URL || import.meta.env.VITE_API_BASE_URL || '';
-const API_UPDATE = import.meta.env.VITE_API_UPDATE_URL || '';
+  import.meta.env.VITE_API_FETCH_URL ||
+  (gatewayBase && fetchLambda ? `${gatewayBase}/${fetchLambda}` : '') ||
+  (!hasExplicitGateway && gatewayBase ? gatewayBase : '');
+const API_UPDATE =
+  import.meta.env.VITE_API_UPDATE_URL ||
+  (gatewayBase && updateLambda ? `${gatewayBase}/${updateLambda}` : '');
 
 const XP_PER_LEVEL = 100;
 
@@ -31,6 +46,7 @@ function buildMongoUserBody(authUser, gameState) {
     },
     lastCompletionDate: gameState.lastCompletionDate,
     updatedAt: new Date().toISOString(),
+    avatarId: gameState.avatarId,
   };
 }
 

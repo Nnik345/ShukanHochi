@@ -1,0 +1,14 @@
+{
+  "name": "questhabit-lambda-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AWS Lambda handlers for QuestHabit party APIs",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^3.1.0",
+    "mongodb": "^6.12.0"
+  }
+}
